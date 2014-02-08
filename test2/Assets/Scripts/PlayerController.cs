@@ -65,13 +65,18 @@ public class PlayerController : MonoBehaviour
       Vector3 relativePos = screenPoint - ropePosition;
       Quaternion ropeRotation = Quaternion.LookRotation(relativePos);
 
-      Vector3 ropeScale = new Vector3(0.05f, 0.05f, Mathf.Sqrt(
-        Mathf.Pow(topOfPlayerPosition.x - screenPoint.x, 2) + 
-        Mathf.Pow(topOfPlayerPosition.y - screenPoint.y, 2)
-      ));
+      float ropeLength = Mathf.Sqrt(
+        Mathf.Pow(topOfPlayerPosition.x - screenPoint.x, 2f) + 
+        Mathf.Pow(topOfPlayerPosition.y - screenPoint.y, 2f)
+      );
+      Vector3 ropeScale = new Vector3(0.05f, 0.05f, ropeLength);
+
+      rope.hingeJoint.connectedBody = transform.rigidbody;
+      rope.hingeJoint.anchor = new Vector3(0f, 0f, -ropeLength/2f);
 
       Transform ropeTransform = (Instantiate (rope, ropePosition, ropeRotation) as GameObject).transform;
       ropeTransform.localScale = ropeScale;
+
     }
 	}
 
