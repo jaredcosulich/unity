@@ -18,6 +18,8 @@ public class PlayerController : MonoBehaviour
 	private Vector2 amountToMove;
 	private PlayerPhysics playerPhysics;
 
+  public GameObject rope;
+
 	// Use this for initialization
 	void Start () {
 		playerPhysics = GetComponent<PlayerPhysics> ();
@@ -44,6 +46,33 @@ public class PlayerController : MonoBehaviour
 		amountToMove.y -= gravity * Time.deltaTime;
 		playerPhysics.Move (amountToMove * Time.deltaTime);
 
+    if (Input.GetMouseButtonDown (0)) {
+      BoxCollider boxCollider = GetComponent<BoxCollider> ();
+
+      Vector3 topOfPlayerPosition = transform.position;
+
+      topOfPlayerPosition.x -= boxCollider.size.x/2;
+      topOfPlayerPosition.y += boxCollider.size.y/2;
+
+      Vector3 screenPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+      screenPoint.z = 0;
+
+      Vector3 ropePosition = new Vector3(
+        topOfPlayerPosition.x - ((topOfPlayerPosition.x - screenPoint.x) / 2),
+        topOfPlayerPosition.y - ((topOfPlayerPosition.y - screenPoint.y) / 2)
+      );
+
+      Vector3 relativePos = screenPoint - ropePosition;
+      Quaternion ropeRotation = Quaternion.LookRotation(relativePos);
+
+      Vector3 ropeScale = new Vector3(0.05f, 0.05f, Mathf.Sqrt(
+        Mathf.Pow(topOfPlayerPosition.x - screenPoint.x, 2) + 
+        Mathf.Pow(topOfPlayerPosition.y - screenPoint.y, 2)
+      ));
+
+      Transform ropeTransform = (Instantiate (rope, ropePosition, ropeRotation) as GameObject).transform;
+      ropeTransform.localScale = ropeScale;
+    }
 	}
 
 	private float IncrementTowards (float current, float target, float acceleration) {
