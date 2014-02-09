@@ -18,6 +18,15 @@ public class PlayerController : MonoBehaviour {
 	private PlayerPhysics playerPhysics;
 
   public GameObject rope;
+  public float ropeVelocity = 500f;
+  private bool throwingRope = false;
+  private Vector3 ropeTarget;
+  private Rigidbody ropeConnection;
+  private Vector3 ropePosition;
+  private float totalRopeLength = 0;
+  private float currentRopeLength = 0;
+  private float instantiatedRopeLength = 0;
+  private float segmentCount = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -46,52 +55,76 @@ public class PlayerController : MonoBehaviour {
 		playerPhysics.Move (amountToMove * Time.deltaTime);
 
     if (Input.GetMouseButtonDown (0)) {
-      ThrowRope (Camera.main.ScreenToWorldPoint(Input.mousePosition));
+      BoxCollider boxCollider = GetComponent<BoxCollider> ();
+      ropePosition = transform.position;   
+      ropePosition.x -= boxCollider.size.x/2;
+      ropePosition.y += boxCollider.size.y/2;
+
+      ropeTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+      ropeTarget.z = 0;
+
+      totalRopeLength = Mathf.Sqrt(
+        Mathf.Pow(ropePosition.x - ropeTarget.x, 2f) + 
+        Mathf.Pow(ropePosition.y - ropeTarget.y, 2f)
+      );
+
+      throwingRope = true;
+    }
+
+    if (throwingRope) {
+      ThrowRope ();
     }
 	}
 
-  private void ThrowRope (Vector3 screenPoint) {
-    screenPoint.z = 0;
-    
-    BoxCollider boxCollider = GetComponent<BoxCollider> ();
-    
-    Vector3 topOfPlayerPosition = transform.position;
-    
-    topOfPlayerPosition.x -= boxCollider.size.x/2;
-    topOfPlayerPosition.y += boxCollider.size.y/2;
-    
-    float ropeLength = Mathf.Sqrt(
-      Mathf.Pow(topOfPlayerPosition.x - screenPoint.x, 2f) + 
-      Mathf.Pow(topOfPlayerPosition.y - screenPoint.y, 2f)
-      );
-    
+  private void ThrowRope () {
+    currentRopeLength += ropeVelocity * Time.deltaTime;
+    if (currentRopeLength > totalRopeLength) {
+      currentRopeLength = totalRopeLength;
+    }
+
+    float ropeLength = currentRopeLength - instantiatedRopeLength;
+   
+    if (currentRopeLength > totalRopeLength) {
+      ResetRope();
+      return;
+    }
+
     float segmentLength = 0.25f;
     Vector3 segmentScale = new Vector3(0.05f, 0.05f, segmentLength);
     rope.hingeJoint.anchor = new Vector3(0f, 0f, -segmentLength/2f);
     
-    Rigidbody connection = transform.rigidbody;
-    float segmentsCount = ropeLength/segmentLength;
-    
-    float xDistance = (topOfPlayerPosition.x - screenPoint.x) / segmentsCount;
-    float yDistance = (topOfPlayerPosition.y - screenPoint.y) / segmentsCount;
+    ropeConnection = transform.rigidbody;
+    float segmentsCount = Mathf.Floor (ropeLength/segmentLength);
+
+    float totalSegments = Mathf.Ceil (totalRopeLength / segmentLength);
+    float xDistance = (ropePosition.x - ropeTarget.x) / totalSegments;
+    float yDistance = (ropePosition.y - ropeTarget.y) / totalSegments;
 
     for (float i=0f; i<segmentsCount; ++i) {
-      rope.hingeJoint.connectedBody = connection;
+      rope.hingeJoint.connectedBody = ropeConnection;
       
-      Vector3 ropePosition = new Vector3(
-        topOfPlayerPosition.x - (xDistance * (i + 0.5f)),
-        topOfPlayerPosition.y - (yDistance * (i + 0.5f))
+      Vector3 segmentPosition = new Vector3(
+        ropePosition.x - (xDistance * (segmentCount + 0.5f)),
+        ropePosition.y - (yDistance * (segmentCount + 0.5f))
       );
       
-      Vector3 relativePos = screenPoint - ropePosition;
+      Vector3 relativePos = ropeTarget - ropePosition;
       Quaternion ropeRotation = Quaternion.LookRotation(relativePos);
       
-      Transform ropeTransform = (Instantiate (rope, ropePosition, ropeRotation) as GameObject).transform;
+      Transform ropeTransform = (Instantiate (rope, segmentPosition, ropeRotation) as GameObject).transform;
       ropeTransform.localScale = segmentScale;
-      connection = ropeTransform.rigidbody;
+      instantiatedRopeLength += segmentLength;
+      ropeConnection = ropeTransform.rigidbody;
+      segmentCount++;
     }
   }
 
+  public void ResetRope() {
+    throwingRope = false;
+    currentRopeLength = 0;
+    instantiatedRopeLength = 0;
+    segmentCount = 0;
+  }
 
   private float IncrementTowards (float current, float target, float acceleration) {
 		if (current == target) {
