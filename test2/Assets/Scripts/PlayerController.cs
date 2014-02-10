@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour {
 	private PlayerPhysics playerPhysics;
 
   public GameObject rope;
-  public float ropeVelocity = 500f;
+  public float ropeVelocity = 20f;
   private bool throwingRope = false;
   private Vector3 ropeTarget;
   private Rigidbody ropeConnection;
@@ -68,6 +68,8 @@ public class PlayerController : MonoBehaviour {
         Mathf.Pow(ropePosition.y - ropeTarget.y, 2f)
       );
 
+      ropeConnection = transform.rigidbody;
+
       throwingRope = true;
     }
 
@@ -84,8 +86,8 @@ public class PlayerController : MonoBehaviour {
 
     float ropeLength = currentRopeLength - instantiatedRopeLength;
    
-    if (currentRopeLength > totalRopeLength) {
-      ResetRope();
+    if (currentRopeLength + ropeLength >= totalRopeLength) {
+      FinishRope();
       return;
     }
 
@@ -93,7 +95,6 @@ public class PlayerController : MonoBehaviour {
     Vector3 segmentScale = new Vector3(0.05f, 0.05f, segmentLength);
     rope.hingeJoint.anchor = new Vector3(0f, 0f, -segmentLength/2f);
     
-    ropeConnection = transform.rigidbody;
     float segmentsCount = Mathf.Floor (ropeLength/segmentLength);
 
     float totalSegments = Mathf.Ceil (totalRopeLength / segmentLength);
@@ -119,8 +120,15 @@ public class PlayerController : MonoBehaviour {
     }
   }
 
-  public void ResetRope() {
+  public void FinishRope() {
     throwingRope = false;
+
+    Rigidbody connection = ropeConnection;
+    while (!connection.useGravity) {
+      connection.useGravity = true;
+      connection = connection.hingeJoint.connectedBody;
+    }
+
     currentRopeLength = 0;
     instantiatedRopeLength = 0;
     segmentCount = 0;
