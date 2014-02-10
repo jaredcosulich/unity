@@ -85,29 +85,33 @@ public class PlayerController : MonoBehaviour {
     }
 
     float ropeLength = currentRopeLength - instantiatedRopeLength;
-   
+    
     if (currentRopeLength + ropeLength >= totalRopeLength) {
-      FinishRope();
-      return;
+      BuildSegments (totalRopeLength - instantiatedRopeLength);
+      FinishRope ();
+    } else {
+      BuildSegments (ropeLength);
     }
+  }
 
+  private void BuildSegments (float ropeLength) {
     float segmentLength = 0.25f;
     Vector3 segmentScale = new Vector3(0.05f, 0.05f, segmentLength);
     rope.hingeJoint.anchor = new Vector3(0f, 0f, -segmentLength/2f);
     
     float segmentsCount = Mathf.Floor (ropeLength/segmentLength);
-
+    
     float totalSegments = Mathf.Ceil (totalRopeLength / segmentLength);
     float xDistance = (ropePosition.x - ropeTarget.x) / totalSegments;
     float yDistance = (ropePosition.y - ropeTarget.y) / totalSegments;
-
+    
     for (float i=0f; i<segmentsCount; ++i) {
       rope.hingeJoint.connectedBody = ropeConnection;
       
       Vector3 segmentPosition = new Vector3(
         ropePosition.x - (xDistance * (segmentCount + 0.5f)),
         ropePosition.y - (yDistance * (segmentCount + 0.5f))
-      );
+        );
       
       Vector3 relativePos = ropeTarget - ropePosition;
       Quaternion ropeRotation = Quaternion.LookRotation(relativePos);
