@@ -77,10 +77,6 @@ public class PlayerController : MonoBehaviour {
     if (throwingRope) {
       ThrowRope ();
     }
-
-    if (ropeConnection && !throwingRope) {
-      FinishRope ();
-    }
 	}
 
   private void ThrowRope () {
@@ -126,31 +122,29 @@ public class PlayerController : MonoBehaviour {
       instantiatedRopeLength += segmentLength;
       ropeConnection = ropeTransform.rigidbody;
       segmentCount++;
+
+      RopePhysics ropePhysics = ropeConnection.GetComponent<RopePhysics> ();
+      ropePhysics.Attach ();
+
+      if (ropePhysics.attached) {
+        FinishRope();
+        break;
+      }
     }
   }
 
   public void FinishRope() {
     throwingRope = false;
    
-    Ray ray = new Ray (ropeConnection.position, ropeConnection.transform.forward);
-    Debug.DrawRay (ropeConnection.position, ropeConnection.transform.forward);
-
-//    if (Physics.Raycast(ray, out hit, Mathf.Abs(deltaY) + skin, collisionMask)) {
-//      float distance = Vector3.Distance(ray.origin, hit.point);
-//      
-//      if (distance > skin) {
-//        deltaY = (distance * direction) - (skin * direction);
-//      } else {
-//        deltaY = 0;
-//      }
-//      grounded = true;
-//      break;
-//    }
-
+    RopePhysics ropePhysics = ropeConnection.GetComponent<RopePhysics> ();
+    if (!ropePhysics.attached) {
+      ropePhysics.Detach();
+      ropePhysics.Remove();
+    }
 
     Rigidbody connection = ropeConnection;
     while (!connection.useGravity) {
-//      connection.useGravity = true;
+      connection.useGravity = true;
       if (!connection.hingeJoint) {
         break;
       }
