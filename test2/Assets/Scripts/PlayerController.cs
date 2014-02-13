@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour {
   private float currentRopeLength = 0;
   private float instantiatedRopeLength = 0;
   private float segmentCount = 0;
+  private float segmentLength = 0.25f;
 
 	// Use this for initialization
 	void Start () {
@@ -76,6 +77,10 @@ public class PlayerController : MonoBehaviour {
     if (throwingRope) {
       ThrowRope ();
     }
+
+    if (ropeConnection && !throwingRope) {
+      FinishRope ();
+    }
 	}
 
   private void ThrowRope () {
@@ -95,8 +100,7 @@ public class PlayerController : MonoBehaviour {
   }
 
   private void BuildSegments (float ropeLength) {
-    float segmentLength = 0.25f;
-    Vector3 segmentScale = new Vector3(0.05f, 0.05f, segmentLength);
+    Vector3 segmentScale = new Vector3(0.025f, 0.025f, segmentLength);
     rope.hingeJoint.anchor = new Vector3(0f, 0f, -segmentLength/2f);
     
     float segmentsCount = Mathf.Floor (ropeLength/segmentLength);
@@ -106,18 +110,19 @@ public class PlayerController : MonoBehaviour {
     float yDistance = (ropePosition.y - ropeTarget.y) / totalSegments;
     
     for (float i=0f; i<segmentsCount; ++i) {
-      rope.hingeJoint.connectedBody = ropeConnection;
-      
       Vector3 segmentPosition = new Vector3(
         ropePosition.x - (xDistance * (segmentCount + 0.5f)),
         ropePosition.y - (yDistance * (segmentCount + 0.5f))
-        );
+      );
       
       Vector3 relativePos = ropeTarget - ropePosition;
       Quaternion ropeRotation = Quaternion.LookRotation(relativePos);
       
       Transform ropeTransform = (Instantiate (rope, segmentPosition, ropeRotation) as GameObject).transform;
       ropeTransform.localScale = segmentScale;
+
+      ropeTransform.hingeJoint.connectedBody = ropeConnection;
+
       instantiatedRopeLength += segmentLength;
       ropeConnection = ropeTransform.rigidbody;
       segmentCount++;
@@ -126,10 +131,29 @@ public class PlayerController : MonoBehaviour {
 
   public void FinishRope() {
     throwingRope = false;
+   
+    Ray ray = new Ray (ropeConnection.position, ropeConnection.transform.forward);
+    Debug.DrawRay (ropeConnection.position, ropeConnection.transform.forward);
+
+//    if (Physics.Raycast(ray, out hit, Mathf.Abs(deltaY) + skin, collisionMask)) {
+//      float distance = Vector3.Distance(ray.origin, hit.point);
+//      
+//      if (distance > skin) {
+//        deltaY = (distance * direction) - (skin * direction);
+//      } else {
+//        deltaY = 0;
+//      }
+//      grounded = true;
+//      break;
+//    }
+
 
     Rigidbody connection = ropeConnection;
     while (!connection.useGravity) {
-      connection.useGravity = true;
+//      connection.useGravity = true;
+      if (!connection.hingeJoint) {
+        break;
+      }
       connection = connection.hingeJoint.connectedBody;
     }
 
