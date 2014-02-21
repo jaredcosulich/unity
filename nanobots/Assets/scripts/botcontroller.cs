@@ -35,11 +35,20 @@ public class BotController : MonoBehaviour {
 			Vector3 p = transform.position;
 
 			float remainingXDistance = p.x - targetLocation.x;
-			currentXSpeed = CalculateSpeed (currentXSpeed, remainingXDistance);
+			float remainingYDistance = p.y - targetLocation.y;
+
+			float topXSpeed = topSpeed;
+			float topYSpeed = topSpeed;
+			if (Mathf.Abs(remainingXDistance) > Mathf.Abs(remainingYDistance)) {
+				topYSpeed = topSpeed * Mathf.Abs(remainingYDistance / remainingXDistance);
+			} else {
+				topXSpeed = topSpeed * Mathf.Abs(remainingXDistance / remainingYDistance);
+			}
+
+			currentXSpeed = CalculateSpeed (currentXSpeed, remainingXDistance, topXSpeed);
 			float xDistance = currentXSpeed * Time.deltaTime;
 
-			float remainingYDistance = p.y - targetLocation.y;
-			currentYSpeed = CalculateSpeed (currentYSpeed, remainingYDistance);
+			currentYSpeed = CalculateSpeed (currentYSpeed, remainingYDistance, topYSpeed);
 			float yDistance = currentYSpeed * Time.deltaTime;
 
 			Vector2 newPosition = transform.position;
@@ -53,15 +62,15 @@ public class BotController : MonoBehaviour {
 //		playerPhysics.Move (amountToMove * Time.deltaTime);		
 	}
 
-	private float CalculateSpeed (float currentSpeed, float remainingDistance) {
-		float direction = (remainingDistance > 0 ? -1 : 1);
+	private float CalculateSpeed (float currentSpeed, float distance, float targetSpeed) {
+		float direction = (distance > 0 ? -1 : 1);
 		
-		if (Mathf.Abs (remainingDistance) < Mathf.Abs (breakAhead * (currentSpeed * Time.deltaTime))) {
+		if (Mathf.Abs (distance) < Mathf.Abs (breakAhead * (currentSpeed * Time.deltaTime))) {
 			currentSpeed = IncrementTowards (currentSpeed, 0, acceleration * 2);
 		} else {
-			currentSpeed = IncrementTowards (currentSpeed, topSpeed * direction, acceleration);
+			currentSpeed = IncrementTowards (currentSpeed, targetSpeed * direction, acceleration);
 		}
-		return IncrementTowards (currentSpeed, topSpeed * direction, acceleration);		
+		return IncrementTowards (currentSpeed, targetSpeed * direction, acceleration);		
 	}
 
 
