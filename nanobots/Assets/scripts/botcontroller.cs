@@ -1,20 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class botcontroller : MonoBehaviour {
+public class BotController : MonoBehaviour {
 
 	private float acceleration = 50;
-	
-	private float topSpeed = 80;
-	private float currentSpeed;
+	private float breakAhead = 5;
+
+	private float topSpeed = 15;
+	private float gravity = 10;
+	private float currentXSpeed;
+	private float currentYSpeed;
 
 	private Vector3 targetLocation;
 	private bool targetLocationSet;
 
+	private BotPhysics botPhysics;
+
+  
 	// Use this for initialization
 	void Start () {
-	
-	}
+		botPhysics = GetComponent<BotPhysics> ();
+  }
 	
 	// Update is called once per frame
 	void Update () {
@@ -26,26 +32,19 @@ public class botcontroller : MonoBehaviour {
 		}
 
 		if (targetLocationSet) {
-			currentSpeed = IncrementTowards (currentSpeed, topSpeed, acceleration);
 			Vector3 p = transform.position;
 
-			float distance = currentSpeed * Time.deltaTime;
+			float remainingXDistance = p.x - targetLocation.x;
+			currentXSpeed = CalculateSpeed (currentXSpeed, remainingXDistance);
+			float xDistance = currentXSpeed * Time.deltaTime;
 
-			if (Mathf.Sqrt(Mathf.Pow(p.x - targetLocation.x, 2) + Mathf.Pow(p.y - targetLocation.y, 2)) < distance) {
-				transform.position = targetLocation;
-				targetLocationSet = false;
-				currentSpeed = 0;
-				return;
-			}
+			float remainingYDistance = p.y - targetLocation.y;
+			currentYSpeed = CalculateSpeed (currentYSpeed, remainingYDistance);
+			float yDistance = currentYSpeed * Time.deltaTime;
 
-			float ratio = (p.y - targetLocation.y)/(p.x - targetLocation.x);
-			float direction = (p.x - targetLocation.x) < 0 ? 1f : -1f;
-			float ratioDistance = Mathf.Sqrt (1f + Mathf.Pow (ratio, 2));
-	
-			Vector2 amountToMove = new Vector2(direction * distance / ratioDistance, ratio * (distance / ratioDistance));
 			Vector2 newPosition = transform.position;
-			newPosition.x += amountToMove.x;
-			newPosition.y += amountToMove.y;
+			newPosition.x += xDistance;
+			newPosition.y += yDistance;
 			transform.position = newPosition;
 		}
 
@@ -54,12 +53,29 @@ public class botcontroller : MonoBehaviour {
 //		playerPhysics.Move (amountToMove * Time.deltaTime);		
 	}
 
+	private float CalculateSpeed (float currentSpeed, float remainingDistance) {
+		float direction = (remainingDistance > 0 ? -1 : 1);
+		
+		if (Mathf.Abs (remainingDistance) < Mathf.Abs (breakAhead * (currentSpeed * Time.deltaTime))) {
+			currentSpeed = IncrementTowards (currentSpeed, 0, acceleration * 2);
+		} else {
+			currentSpeed = IncrementTowards (currentSpeed, topSpeed * direction, acceleration);
+		}
+		return IncrementTowards (currentSpeed, topSpeed * direction, acceleration);		
+	}
+
+
 	private float IncrementTowards (float current, float target, float acceleration) {
 		if (current == target) {
 			return current;
 		} else {
+			float gravitizedAcceleration = acceleration;
+			if (Mathf.Abs (current) < 1) {
+				gravitizedAcceleration = acceleration * (Mathf.Abs (current) + 0.1f);
+			} 
+
 			float direction = Mathf.Sign (target - current);
-			current += acceleration * Time.deltaTime * direction;
+			current += gravitizedAcceleration * Time.deltaTime * direction;
 			return (direction == Mathf.Sign (target - current) ? current : target);
 		}
 	}
