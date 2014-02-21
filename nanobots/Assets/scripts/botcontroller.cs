@@ -3,9 +3,9 @@ using System.Collections;
 
 public class botcontroller : MonoBehaviour {
 
-	private float acceleration = 3;
+	private float acceleration = 50;
 	
-	private float topSpeed = 10;
+	private float topSpeed = 80;
 	private float currentSpeed;
 
 	private Vector3 targetLocation;
@@ -23,18 +23,30 @@ public class botcontroller : MonoBehaviour {
 			clickLocation.z = 10;
 			targetLocation = Camera.main.ScreenToWorldPoint(clickLocation);
 			targetLocationSet = true;
-			Debug.Log (Input.mousePosition);
-			Debug.Log (targetLocation.ToString("G3"));
 		}
 
 		if (targetLocationSet) {
 			currentSpeed = IncrementTowards (currentSpeed, topSpeed, acceleration);
 			Vector3 p = transform.position;
-			float totalDistance = Mathf.Sqrt (Mathf.Pow (p.x - targetLocation.x, 2) + Mathf.Pow (p.y - targetLocation.y, 2));
+
 			float distance = currentSpeed * Time.deltaTime;
-			Debug.Log (totalDistance + " - " + distance);
-			transform.position = targetLocation;
-			targetLocationSet = false;
+
+			if (Mathf.Sqrt(Mathf.Pow(p.x - targetLocation.x, 2) + Mathf.Pow(p.y - targetLocation.y, 2)) < distance) {
+				transform.position = targetLocation;
+				targetLocationSet = false;
+				currentSpeed = 0;
+				return;
+			}
+
+			float ratio = (p.y - targetLocation.y)/(p.x - targetLocation.x);
+			float direction = (p.x - targetLocation.x) < 0 ? 1f : -1f;
+			float ratioDistance = Mathf.Sqrt (1f + Mathf.Pow (ratio, 2));
+	
+			Vector2 amountToMove = new Vector2(direction * distance / ratioDistance, ratio * (distance / ratioDistance));
+			Vector2 newPosition = transform.position;
+			newPosition.x += amountToMove.x;
+			newPosition.y += amountToMove.y;
+			transform.position = newPosition;
 		}
 
 //		amountToMove.x = currentSpeed;
