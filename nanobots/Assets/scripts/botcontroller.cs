@@ -6,7 +6,7 @@ public class BotController : MonoBehaviour {
 	private float acceleration = 50;
 	private float breakAhead = 5;
 
-	private float topSpeed = 15;
+	private float topSpeed = 20;
 	private float gravity = 10;
 	private float currentXSpeed;
 	private float currentYSpeed;
