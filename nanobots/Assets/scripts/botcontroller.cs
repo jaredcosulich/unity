@@ -4,7 +4,7 @@ using System.Collections;
 public class BotController : MonoBehaviour {
 
 	private float acceleration = 50;
-	private float breakAhead = 5;
+	private float breakAhead = 8;
 
 	private float topSpeed = 20;
 	private float gravity = 10;
@@ -32,34 +32,32 @@ public class BotController : MonoBehaviour {
 		}
 
 		if (targetLocationSet) {
-			Vector3 p = transform.position;
+				Vector3 p = transform.position;
 
-			float remainingXDistance = p.x - targetLocation.x;
-			float remainingYDistance = p.y - targetLocation.y;
+				float remainingXDistance = p.x - targetLocation.x;
+				float remainingYDistance = p.y - targetLocation.y;
 
-			float topXSpeed = topSpeed;
-			float topYSpeed = topSpeed;
-			if (Mathf.Abs(remainingXDistance) > Mathf.Abs(remainingYDistance)) {
-				topYSpeed = topSpeed * Mathf.Abs(remainingYDistance / remainingXDistance);
-			} else {
-				topXSpeed = topSpeed * Mathf.Abs(remainingXDistance / remainingYDistance);
-			}
+				float topXSpeed = topSpeed;
+				float topYSpeed = topSpeed;
+				if (Mathf.Abs (remainingXDistance) > Mathf.Abs (remainingYDistance)) {
+						topYSpeed = topSpeed * Mathf.Abs (remainingYDistance / remainingXDistance);
+				} else {
+						topXSpeed = topSpeed * Mathf.Abs (remainingXDistance / remainingYDistance);
+				}
 
-			currentXSpeed = CalculateSpeed (currentXSpeed, remainingXDistance, topXSpeed);
-			float xDistance = currentXSpeed * Time.deltaTime;
+				currentXSpeed = CalculateSpeed (currentXSpeed, remainingXDistance, topXSpeed);
+				float xDistance = currentXSpeed * Time.deltaTime;
 
-			currentYSpeed = CalculateSpeed (currentYSpeed, remainingYDistance, topYSpeed);
-			float yDistance = currentYSpeed * Time.deltaTime;
+				currentYSpeed = CalculateSpeed (currentYSpeed, remainingYDistance, topYSpeed);
+				float yDistance = currentYSpeed * Time.deltaTime;
 
-			Vector2 newPosition = transform.position;
-			newPosition.x += xDistance;
-			newPosition.y += yDistance;
-			transform.position = newPosition;
+				Vector2 newPosition = transform.position;
+				newPosition.x += xDistance;
+				newPosition.y += yDistance;
+				transform.position = newPosition;
+		} else {
+				Hover ();
 		}
-
-//		amountToMove.x = currentSpeed;
-//		amountToMove.y -= gravity * Time.deltaTime;
-//		playerPhysics.Move (amountToMove * Time.deltaTime);		
 	}
 
 	private float CalculateSpeed (float currentSpeed, float distance, float targetSpeed) {
