@@ -1,11 +1,13 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/scripts/BotController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="../test2/Assets/Scripts/PlayerPhysics.cs">
     <Files>
       <File FileName="../test2/Assets/Scripts/PlayerController.cs" Line="35" Column="1" />
       <File FileName="Assets/scripts/BotController.cs" Line="68" Column="14" />
-      <File FileName="Assets/scripts/BotPhysics.cs" Line="17" Column="1" />
-      <File FileName="../test2/Assets/Scripts/PlayerPhysics.cs" Line="14" Column="3" />
+      <File FileName="Assets/scripts/BotPhysics.cs" Line="24" Column="2" />
+      <File FileName="../test2/Assets/Scripts/PlayerPhysics.cs" Line="83" Column="60" />
+      <File FileName="../test2/Assets/Scripts/GameManager.cs" Line="15" Column="2" />
+      <File FileName="Assets/scripts/GameManager.cs" Line="7" Column="41" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

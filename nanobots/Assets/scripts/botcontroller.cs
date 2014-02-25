@@ -8,8 +8,6 @@ public class BotController : MonoBehaviour {
 
 	private float topSpeed = 20;
 	private float gravity = 10;
-	private float currentXSpeed;
-	private float currentYSpeed;
 
 	private Vector3 basePosition;
 
@@ -18,8 +16,7 @@ public class BotController : MonoBehaviour {
 
 	private BotPhysics botPhysics;
 
-	private float windX = 0;
-	private float windY = 0;
+	private float windY;
   
 	// Use this for initialization
 	void Start () {
@@ -50,18 +47,18 @@ public class BotController : MonoBehaviour {
 				topXSpeed = topSpeed * Mathf.Abs (remainingXDistance / remainingYDistance);
 			}
 
-			currentXSpeed = CalculateSpeed (currentXSpeed, remainingXDistance, topXSpeed);
-			float xDistance = currentXSpeed * Time.deltaTime;
+			botPhysics.currentXSpeed = CalculateSpeed (botPhysics.currentXSpeed, remainingXDistance, topXSpeed);
+			float xDistance = botPhysics.currentXSpeed * Time.deltaTime;
 
-			currentYSpeed = CalculateSpeed (currentYSpeed, remainingYDistance, topYSpeed);
-			float yDistance = currentYSpeed * Time.deltaTime;
+			botPhysics.currentYSpeed = CalculateSpeed (botPhysics.currentYSpeed, remainingYDistance, topYSpeed);
+			float yDistance = botPhysics.currentYSpeed * Time.deltaTime;
 
 			Vector2 newPosition = transform.position;
 			newPosition.x += xDistance;
 			newPosition.y += yDistance;
 			transform.position = newPosition;
 
-			if (Mathf.Abs (xDistance) <= 0.01f && Mathf.Abs (yDistance) <= 0.01f && Mathf.Abs (currentXSpeed) <= 0.085f && Mathf.Abs (currentYSpeed) <= 0.08f) {
+			if (Mathf.Abs (xDistance) <= 0.01f && Mathf.Abs (yDistance) <= 0.01f && Mathf.Abs (botPhysics.currentXSpeed) <= 0.085f && Mathf.Abs (botPhysics.currentYSpeed) <= 0.08f) {
 				transform.position = targetLocation;
 				basePosition = targetLocation;
 				targetLocationSet = false;
@@ -75,20 +72,20 @@ public class BotController : MonoBehaviour {
 	private void Hover() {
 		Vector2 position = transform.position;
 		if (basePosition.y == position.y && windY == 0) {
-			currentYSpeed = 0;
+			botPhysics.currentYSpeed = 0;
 			windY += 6;
 		}
 
 		if (windY > 0) {
-			currentYSpeed -= 0.06f;
+			botPhysics.currentYSpeed -= 0.06f;
 			windY -= 1;
 		} else if (position.y < basePosition.y) {
-			currentYSpeed += 0.06f;		
+			botPhysics.currentYSpeed += 0.06f;		
 		} else if (position.y > basePosition.y) {
-			currentYSpeed -= 0.06f;		
+			botPhysics.currentYSpeed -= 0.06f;		
 		}
 
-		float yDistance = currentYSpeed * Time.deltaTime;
+		float yDistance = botPhysics.currentYSpeed * Time.deltaTime;
 		position.y += yDistance;
 		transform.position = position;
 	}

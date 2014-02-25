@@ -4,15 +4,13 @@ using System.Collections;
 public class GameManager : MonoBehaviour {
 
 	public GameObject bot;
-	public ArrayList bots;
+	public Transform[] bots = new Transform[5];
 
 	// Use this for initialization
 	void Start () {
-		SpawnBot ();
-		SpawnBot ();
-		SpawnBot ();
-		SpawnBot ();
-		SpawnBot ();
+		for (int i=0; i<5; ++i) {
+			SpawnBot (i);
+		}
 	}
 	
 	// Update is called once per frame
@@ -20,7 +18,7 @@ public class GameManager : MonoBehaviour {
 		
 	}
 	
-	private void SpawnBot() {
-		bots.Add ((Instantiate (bot, Vector3.zero, Quaternion.identity) as GameObject).transform);
+	private void SpawnBot(int index) {
+		bots[index] = (Instantiate (bot, new Vector3(index/1.5f, 0), Quaternion.identity) as GameObject).transform;
 	}
 }

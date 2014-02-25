@@ -80,6 +80,7 @@ public class PlayerPhysics : MonoBehaviour {
       Vector3 playerDirection = new Vector3 (deltaX, deltaY);
       Vector3 rayOrigin = new Vector3 (p.x + c.x + ((s.x / 2) * Mathf.Sign(deltaX)), p.y + c.y + ((s.y / 2) * Mathf.Sign(deltaY)));
       ray = new Ray (rayOrigin, playerDirection.normalized);
+      Debug.DrawRay(rayOrigin, playerDirection.normalized);
       
       if (Physics.Raycast (ray, out hit, Mathf.Sqrt (deltaX * deltaX + deltaY * deltaY) + skin, collisionMask)) {
         grounded = true;
