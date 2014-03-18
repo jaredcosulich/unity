@@ -29,10 +29,15 @@ public class PlayerController : MonoBehaviour {
   private float segmentCount = 0;
   private float segmentLength = 0.25f;
 
+  private Animator animator;
+  private SpriteRenderer renderer;
+  private float lastDirection = 0;
+
 	// Use this for initialization
 	void Start () {
 		playerPhysics = GetComponent<PlayerPhysics> ();
-	}
+    animator = GetComponent<Animator>();
+  }
 
 	// Update is called once per frame
 	void Update () {
@@ -41,7 +46,16 @@ public class PlayerController : MonoBehaviour {
       currentSpeed = 0;
     }
     
-    targetSpeed = Input.GetAxisRaw ("Horizontal") * speed;
+    float direction = Input.GetAxisRaw ("Horizontal");
+
+    if (Mathf.Abs(direction) == 1) {
+      animator.SetInteger ("Direction", (int) direction);
+    } else {
+      animator.SetInteger ("Direction", 0);
+      Debug.Log (animator.GetCurrentAnimatorStateInfo(0).IsName("professor_stand_west"));
+    }
+
+    targetSpeed = direction * speed;
 		currentSpeed = IncrementTowards (currentSpeed, targetSpeed, acceleration);
 
     if (playerPhysics.grounded) {

@@ -9,11 +9,6 @@ public class BotController : MonoBehaviour {
 	private float topSpeed = 20;
 	private float gravity = 10;
 
-	private Vector3 basePosition;
-
-	private Vector3 targetLocation;
-	private bool targetLocationSet;
-
 	private BotPhysics botPhysics;
 
 	private float windY;
@@ -21,7 +16,6 @@ public class BotController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		botPhysics = GetComponent<BotPhysics> ();
-		basePosition = transform.position;
   }
 	
 	// Update is called once per frame
@@ -29,16 +23,15 @@ public class BotController : MonoBehaviour {
 		if (Input.GetMouseButtonDown (0)) {
 			Vector3 clickLocation = Input.mousePosition;
 			clickLocation.z = 10;
-			targetLocation = Camera.main.ScreenToWorldPoint(clickLocation);
-			targetLocationSet = true;
+			botPhysics.targetLocation = Camera.main.ScreenToWorldPoint(clickLocation);
 		}
 
-		if (targetLocationSet) {
-			Vector3 p = transform.position;
+		Vector3 p = transform.position;
 
-			float remainingXDistance = p.x - targetLocation.x;
-			float remainingYDistance = p.y - targetLocation.y;
+		float remainingXDistance = p.x - botPhysics.targetLocation.x;
+		float remainingYDistance = p.y - botPhysics.targetLocation.y;
 
+		if (Mathf.Abs (remainingXDistance) > Random.value/4 || Mathf.Abs (remainingYDistance) > Random.value/4) {
 			float topXSpeed = topSpeed;
 			float topYSpeed = topSpeed;
 			if (Mathf.Abs (remainingXDistance) > Mathf.Abs (remainingYDistance)) {
@@ -46,58 +39,29 @@ public class BotController : MonoBehaviour {
 			} else {
 				topXSpeed = topSpeed * Mathf.Abs (remainingXDistance / remainingYDistance);
 			}
-
+			
 			botPhysics.currentXSpeed = CalculateSpeed (botPhysics.currentXSpeed, remainingXDistance, topXSpeed);
-			float xDistance = botPhysics.currentXSpeed * Time.deltaTime;
-
 			botPhysics.currentYSpeed = CalculateSpeed (botPhysics.currentYSpeed, remainingYDistance, topYSpeed);
-			float yDistance = botPhysics.currentYSpeed * Time.deltaTime;
-
-			Vector2 newPosition = transform.position;
-			newPosition.x += xDistance;
-			newPosition.y += yDistance;
-			transform.position = newPosition;
-
-			if (Mathf.Abs (xDistance) <= 0.01f && Mathf.Abs (yDistance) <= 0.01f && Mathf.Abs (botPhysics.currentXSpeed) <= 0.085f && Mathf.Abs (botPhysics.currentYSpeed) <= 0.08f) {
-				transform.position = targetLocation;
-				basePosition = targetLocation;
-				targetLocationSet = false;
-				Hover ();
-			}
-		} else {
-			Hover ();
 		}
+
+		float xDistance = botPhysics.currentXSpeed * Time.deltaTime;
+    	float yDistance = botPhysics.currentYSpeed * Time.deltaTime;
+
+		Vector2 newPosition = transform.position;
+		newPosition.x += xDistance;
+		newPosition.y += yDistance;
+		transform.position = newPosition;
 	}
-
-	private void Hover() {
-		Vector2 position = transform.position;
-		if (basePosition.y == position.y && windY == 0) {
-			botPhysics.currentYSpeed = 0;
-			windY += 6;
-		}
-
-		if (windY > 0) {
-			botPhysics.currentYSpeed -= 0.06f;
-			windY -= 1;
-		} else if (position.y < basePosition.y) {
-			botPhysics.currentYSpeed += 0.06f;		
-		} else if (position.y > basePosition.y) {
-			botPhysics.currentYSpeed -= 0.06f;		
-		}
-
-		float yDistance = botPhysics.currentYSpeed * Time.deltaTime;
-		position.y += yDistance;
-		transform.position = position;
-	}
-
+	
 	private float CalculateSpeed (float currentSpeed, float distance, float targetSpeed) {
 		float direction = (distance > 0 ? -1 : 1);
-		
+
 		if (Mathf.Abs (distance) < Mathf.Abs (breakAhead * (currentSpeed * Time.deltaTime))) {
 			currentSpeed = IncrementTowards (currentSpeed, 0, acceleration * 2);
 		} else {
 			currentSpeed = IncrementTowards (currentSpeed, targetSpeed * direction, acceleration);
 		}
+		return currentSpeed;
 		return IncrementTowards (currentSpeed, targetSpeed * direction, acceleration);		
 	}
 
